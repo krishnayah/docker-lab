@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: farmers_markets_db
+    environment:
+      POSTGRES_DB: $farmers_db
+      POSTGRES_USER: $farm_user
+      POSTGRES_PASSWORD: $supersecret
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: always
+
+  web:
+    build: .
+    image: imjordannyc/farmers_markets_app:latest
+    container_name: farmers_markets_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+volumes:
+  postgres_data:
